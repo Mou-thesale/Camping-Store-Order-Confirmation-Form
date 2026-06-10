@@ -20,9 +20,13 @@
     <!-- Header / Brand Banner -->
     <header class="bg-emerald-950 text-stone-100 py-6 px-4 shadow-md text-center relative overflow-hidden">
         <div class="absolute inset-0 opacity-10 pointer-events-none bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1200&q=80');"></div>
-        <div class="relative z-10 max-w-2xl mx-auto">
-            <div class="inline-flex items-center justify-center w-12 h-12 bg-emerald-900 rounded-full mb-3 border border-emerald-700">
-                <i class="fa-solid fa-campground text-amber-400 text-xl animate-pulse"></i>
+        <div class="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
+            <!-- Smart Logo Container (Loads your custom logo with a failsafe campground icon) -->
+            <div class="w-16 h-16 bg-white rounded-full mb-3 border border-emerald-700 overflow-hidden flex items-center justify-center shadow-lg">
+                <img id="store-logo" src="https://raw.githubusercontent.com/Mou-thesale/Camping-Store-Order-Confirmation-Form/main/thesale3%20logo555.png" alt="Logo" class="w-full h-full object-cover" onerror="this.style.display='none'; document.getElementById('fallback-logo').classList.remove('hidden');">
+                <div id="fallback-logo" class="hidden">
+                    <i class="fa-solid fa-campground text-emerald-800 text-2xl animate-pulse"></i>
+                </div>
             </div>
             <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">TheSale3 Camping Store</h1>
             <p class="text-xs md:text-sm text-emerald-200 mt-1 uppercase tracking-widest font-semibold">
@@ -262,7 +266,7 @@
                         <span><i class="fa-solid fa-credit-card text-emerald-700 mr-2"></i>2. ຊ່ອງທາງຊຳລະເງິນ / Payment Method</span>
                     </h2>
 
-                    <div class="p-5 border-2 border-emerald-600 bg-emerald-50/20 rounded-2xl flex items-center select-none">
+                    <div class="p-5 border-2 border-emerald-600 bg-emerald-50/20 rounded-2xl flex items-center select-none shadow-sm">
                         <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mr-4">
                             <i class="fa-solid fa-building-columns text-xl"></i>
                         </div>
@@ -271,7 +275,7 @@
                             <span class="text-xs text-stone-500 block mt-0.5">ກະລຸນາໂອນເງິນ ແລະ ແນບຮູບໃບບິນເພື່ອຢືນຢັນການສັ່ງຊື້ / Please transfer and attach transaction slip</span>
                         </div>
                         <div class="text-emerald-700 text-2xl mr-1">
-                            <i class="fa-solid fa-circle-check"></i>
+                            <i class="fa-solid fa-circle-check animate-pulse"></i>
                         </div>
                     </div>
                 </div>
@@ -279,16 +283,25 @@
                 <!-- Bank receipt slip area -->
                 <div id="bank-transfer-section" class="space-y-4 bg-stone-50 p-5 rounded-2xl border border-stone-200 transition-all duration-300">
                     <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center">
-                        <div class="flex-shrink-0 w-28 h-28 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-center overflow-hidden">
-                            <!-- QR Payment mockup. Replace data string parameter with your own bank details -->
-                            <img id="bank-qr-code" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TheSale3-Camping" alt="Bank QR" class="w-full h-full object-contain p-1">
+                        <div class="flex-shrink-0 w-28 h-28 bg-stone-50 border border-stone-200 rounded-lg flex flex-col items-center justify-center overflow-hidden relative group cursor-pointer" onclick="openQrModal()">
+                            <!-- Real Custom BCEL QR code uploaded on GitHub -->
+                            <img id="bank-qr-code" src="https://raw.githubusercontent.com/Mou-thesale/Camping-Store-Order-Confirmation-Form/main/qr-bank-bcel.jpg" alt="Bank QR" class="w-full h-full object-contain p-1" onerror="this.style.display='none'; document.getElementById('qr-fallback-logo').classList.remove('hidden');">
+                            <div id="qr-fallback-logo" class="hidden text-stone-400 text-2xl">
+                                <i class="fa-solid fa-qrcode animate-pulse"></i>
+                            </div>
+                            <!-- Overlay hover text -->
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-150">
+                                <span class="text-[10px] text-white font-bold"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i>ແຕະເພື່ອຂະຫຍາຍ</span>
+                            </div>
                         </div>
-                        <div class="text-center sm:text-left text-xs space-y-1">
+                        <div class="text-center sm:text-left text-xs space-y-1 flex-grow">
                             <p class="font-bold text-stone-900 text-sm">ລາຍລະອຽດບັນຊີໂອນ / Account Details</p>
                             <p class="text-stone-600"><span class="font-semibold text-stone-700">ທະນາຄານ / Bank:</span> BCEL Bank</p>
                             <p class="text-stone-600"><span class="font-semibold text-stone-700">ເລກບັນຊີ / Acc No:</span> 160-12-00-1112223-001</p>
                             <p class="text-stone-600"><span class="font-semibold text-stone-700">ຊື່ບັນຊີ / Name:</span> TheSale3 Camping</p>
-                            <p class="text-[10px] text-amber-800 font-medium bg-amber-50 px-2 py-0.5 rounded inline-block mt-1">ກະລຸນາໂອນເງິນ ແລະ ແນບຮູບໃບບິນຢູ່ລຸ່ມນີ້ / Transfer and attach slip below.</p>
+                            <button type="button" onclick="openQrModal()" class="text-[10px] text-emerald-800 font-bold bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded inline-block mt-1 transition border border-emerald-200">
+                                <i class="fa-solid fa-expand mr-1"></i> ເບິ່ງຮູບ QR ໃຫຍ່ / View Large QR
+                            </button>
                         </div>
                     </div>
 
@@ -339,9 +352,18 @@
 
         <!-- Success Result Card -->
         <div id="success-container" class="hidden bg-white rounded-2xl shadow-xl border border-stone-100 p-8 text-center space-y-6 py-12">
-            <div class="w-20 h-20 bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-full flex items-center justify-center mx-auto text-4xl animate-bounce">
-                <i class="fa-solid fa-circle-check"></i>
+            <!-- Branded Success Stamp using your official store logo -->
+            <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-md border border-stone-100 overflow-hidden relative">
+                <img src="https://raw.githubusercontent.com/Mou-thesale/Camping-Store-Order-Confirmation-Form/main/thesale3%20logo555.png" alt="Success Store Logo" class="w-full h-full object-cover" onerror="this.style.display='none'; document.getElementById('success-fallback-logo').classList.remove('hidden');">
+                <div id="success-fallback-logo" class="hidden text-emerald-800 text-3xl">
+                    <i class="fa-solid fa-circle-check animate-bounce"></i>
+                </div>
+                <!-- Glowing success check icon indicator at bottom right of badge -->
+                <div class="absolute bottom-0 right-0 bg-emerald-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] border border-white shadow">
+                    <i class="fa-solid fa-check"></i>
+                </div>
             </div>
+
             <div class="space-y-2">
                 <h3 class="text-xl font-bold text-stone-900">ຢືນຢັນການສັ່ງຊື້ສຳເລັດແລ້ວ!</h3>
                 <h4 class="text-sm font-semibold text-stone-500 uppercase tracking-widest mt-0.5">Order Confirmed Successfully!</h4>
@@ -356,7 +378,7 @@
                     <span id="receipt-name" class="font-bold text-stone-900">-</span>
                 </div>
                 <div class="flex justify-between border-b border-stone-200 pb-2">
-                    <span class="text-stone-600">\ບີໂທ / Phone:</span>
+                    <span class="text-stone-600">ເບີໂທ / Phone:</span>
                     <span id="receipt-phone" class="font-medium text-stone-900">-</span>
                 </div>
                 <div class="flex justify-between border-b border-stone-200 pb-2">
@@ -375,6 +397,33 @@
         </div>
 
     </main>
+
+    <!-- ============================================== -->
+    <!-- INTERACTIVE BCEL QR CODE MODAL                 -->
+    <!-- ============================================== -->
+    <div id="qr-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4" onclick="closeQrModal()">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 text-center relative" onclick="event.stopPropagation()">
+            <button type="button" onclick="closeQrModal()" class="absolute top-3.5 right-3.5 text-stone-400 hover:text-stone-700 transition">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            <div class="flex items-center justify-center gap-2 border-b border-stone-100 pb-3">
+                <i class="fa-solid fa-qrcode text-emerald-800 text-lg"></i>
+                <h3 class="font-black text-stone-900 text-sm md:text-base uppercase">Scan payment QR Code</h3>
+            </div>
+            <div class="border border-stone-200 rounded-2xl p-3 bg-stone-50 shadow-inner max-w-[240px] mx-auto">
+                <!-- Main modal QR displays custom qr-bank-bcel.jpg from GitHub -->
+                <img id="modal-qr-img" src="https://raw.githubusercontent.com/Mou-thesale/Camping-Store-Order-Confirmation-Form/main/qr-bank-bcel.jpg" alt="BCEL QR large" class="w-full h-auto rounded-lg object-contain">
+            </div>
+            <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl text-center">
+                <p class="text-xs text-emerald-950 font-bold leading-relaxed">
+                    💡 ກະລຸນາແຄັບຈໍພາບ (Take Screenshot)<br>ແລ້ວນຳເຂົ້າໄປສະແກນຈ່າຍໃນແອັບ BCEL One
+                </p>
+            </div>
+            <button type="button" onclick="closeQrModal()" class="w-full bg-emerald-950 hover:bg-emerald-900 text-white font-bold py-3 rounded-xl text-xs transition uppercase tracking-wide">
+                ປິດໜ້າຈໍ / Close Preview
+            </button>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-stone-950 text-stone-400 py-6 text-center text-xs border-t border-stone-900">
@@ -441,6 +490,15 @@
 
         let compressedImageBase64 = "";
         let originalFileName = "";
+
+        // Modal triggers
+        function openQrModal() {
+            document.getElementById('qr-modal').classList.remove('hidden');
+        }
+
+        function closeQrModal() {
+            document.getElementById('qr-modal').classList.add('hidden');
+        }
 
         // On Page Load: Handle Routing (Admin Panel vs Customer Checkout)
         window.addEventListener('load', () => {
@@ -690,9 +748,6 @@
                 // Write plain text array description to Google sheets hidden field input
                 document.getElementById('hidden-products-list').value = itemSummaryTextList.join(", ");
 
-                // Set dynamic QR code generation containing total amount due
-                document.getElementById('bank-qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TheSale3-ORDER-${decodedJson.orderId}-AMOUNT-${decodedJson.grandTotal}`;
-
             } catch (err) {
                 console.error("Failed parsing order link", err);
                 showError("Invalid Order link. Please request a new verification link from your seller.");
@@ -788,6 +843,12 @@
                 img.src = event.target.result;
             };
             reader.readAsDataURL(file);
+        }
+
+        function showError(message) {
+            errorMessageText.innerText = message;
+            errorContainer.classList.remove('hidden');
+            errorContainer.scrollIntoView({ behavior: 'smooth' });
         }
 
         // ============================================== 
