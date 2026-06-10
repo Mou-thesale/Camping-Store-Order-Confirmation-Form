@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheSale3 Camping Store - Confirm Order</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons for Camping Theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Lao', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header / Brand Banner -->
+    <header class="bg-emerald-950 text-stone-100 py-6 px-4 shadow-md text-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 pointer-events-none bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1200&q=80');"></div>
+        <div class="relative z-10 max-w-2xl mx-auto">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-emerald-900 rounded-full mb-3 border border-emerald-700">
+                <i class="fa-solid fa-campground text-amber-400 text-xl animate-pulse"></i>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">TheSale3 Camping Store</h1>
+            <p class="text-xs md:text-sm text-emerald-200 mt-1 uppercase tracking-widest font-semibold">
+                ລະບົບຢືນຢັນການສັ່ງຊື້ & ຈັດສົ່ງ • Order Fulfillment & Confirmation
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-2xl w-full mx-auto px-4 py-8">
+
+        <!-- ERROR MESSAGE BANNER -->
+        <div id="error-container" class="hidden bg-rose-50 border border-rose-200 p-4 rounded-xl text-rose-800 text-sm mb-6 flex items-start gap-3">
+            <i class="fa-solid fa-triangle-exclamation text-lg mt-0.5"></i>
+            <div class="flex-grow">
+                <p class="font-bold">ເກີດຂໍ້ຜິດພາດ! (Something went wrong!)</p>
+                <p id="error-message-text">We were unable to process request.</p>
+            </div>
+            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-rose-600 hover:text-rose-900 font-bold">&times;</button>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- STEP 1: ADMIN LINK GENERATOR INTERFACE        -->
+        <!-- ============================================== -->
+        <div id="admin-container" class="hidden bg-white rounded-2xl shadow-xl border border-stone-200 overflow-hidden p-6 md:p-8 space-y-6">
+            <div class="border-b border-stone-100 pb-4">
+                <span class="bg-emerald-100 text-emerald-800 text-xs font-bold uppercase px-2.5 py-1 rounded">Admin Mode (ຂັ້ນຕອນທີ 1)</span>
+                <h2 class="text-2xl font-bold mt-2 text-stone-900">ສ້າງລິ້ງສົ່ງໃຫ້ລູກຄ້າ / Create Customer Link</h2>
+                <p class="text-stone-500 text-xs mt-1">Select camping products from your inventory to generate a prefilled customer billing URL.</p>
+            </div>
+
+            <!-- Form parameters config -->
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 uppercase mb-1">ເລກບິນສັ່ງຊື້ / INV ID #</label>
+                        <input type="text" id="admin-order-id" class="w-full rounded-lg border-stone-200 border p-3 text-stone-900 text-sm focus:ring-2 focus:ring-emerald-700 focus:outline-none" placeholder="e.g. INV-7127">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 uppercase mb-1">ຊ່ອງທາງຂາຍ / Source</label>
+                        <select id="admin-source" class="w-full rounded-lg border-stone-200 border p-3 text-stone-900 text-sm focus:ring-2 focus:ring-emerald-700 focus:outline-none">
+                            <option value="TikTok">TikTok</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="WhatsApp">WhatsApp</option>
+                            <option value="LINE">LINE</option>
+                            <option value="Other">Other / ອື່ນໆ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Creator Table -->
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase mb-2">ລາຍການສິນຄ້າ / Product List</label>
+                    <div id="admin-product-rows" class="space-y-3">
+                        <!-- First Product Row -->
+                        <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center product-row bg-stone-50 p-3 rounded-xl border border-stone-200 relative">
+                            <div class="w-full sm:w-1/2">
+                                <select onchange="onProductSelect(this)" class="prod-sku-selector w-full rounded-lg border-stone-200 border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700">
+                                    <option value="">-- ເລືອກສິນຄ້າ (Select Product) --</option>
+                                    <!-- Dynamic options injected by JS -->
+                                </select>
+                                <input type="text" placeholder="Custom Product Name" class="prod-name-custom w-full mt-2 rounded-lg border-stone-200 border p-2 text-sm hidden">
+                            </div>
+                            <div class="flex gap-2 w-full sm:w-1/2 items-center">
+                                <div class="w-1/3">
+                                    <input type="number" placeholder="Qty" class="prod-qty w-full rounded-lg border-stone-200 border p-2 text-sm text-center focus:outline-none" min="1" value="1">
+                                </div>
+                                <div class="w-2/3 relative">
+                                    <input type="number" placeholder="Price (LAK)" class="prod-price w-full rounded-lg border-stone-200 border p-2 pr-8 text-sm text-right focus:outline-none">
+                                    <span class="absolute right-2.5 top-2.5 text-[10px] font-bold text-stone-400">LAK</span>
+                                </div>
+                                <button type="button" onclick="removeProductRow(this)" class="text-rose-500 hover:text-rose-700 p-2"><i class="fa-regular fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addProductRow()" class="mt-3 text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 px-3 py-2 rounded-lg font-bold flex items-center gap-1 transition">
+                        <i class="fa-solid fa-circle-plus"></i> ເພີ່ມສິນຄ້າ / Add Product
+                    </button>
+                </div>
+
+                <!-- Financial adjustments -->
+                <div class="grid grid-cols-2 gap-4 bg-stone-50 p-4 rounded-xl border border-stone-200">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-600 uppercase mb-1">ສ່ວນຫຼຸດ / Discount (LAK)</label>
+                        <input type="number" id="admin-discount" class="w-full rounded-lg border-stone-200 border p-2.5 text-sm text-right" placeholder="0" min="0" value="0">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-stone-600 uppercase mb-1">ມັດຈຳ / Deposit Paid (LAK)</label>
+                        <input type="number" id="admin-deposit" class="w-full rounded-lg border-stone-200 border p-2.5 text-sm text-right" placeholder="0" min="0" value="0">
+                    </div>
+                </div>
+
+                <div class="bg-stone-100 p-4 rounded-xl space-y-1.5 text-sm">
+                    <div class="flex justify-between text-stone-600">
+                        <span>ລາຄາລວມສິນຄ້າ / Subtotal:</span>
+                        <span id="admin-calc-subtotal" class="font-semibold">0 LAK</span>
+                    </div>
+                    <div class="flex justify-between text-rose-600">
+                        <span>ສ່ວນຫຼຸດທັງໝົດ / Discount:</span>
+                        <span id="admin-calc-discount">-0 LAK</span>
+                    </div>
+                    <div class="flex justify-between text-blue-600">
+                        <span>ມັດຈຳແລ້ວ / Deposit:</span>
+                        <span id="admin-calc-deposit">-0 LAK</span>
+                    </div>
+                    <div class="flex justify-between font-black text-stone-900 border-t border-stone-300 pt-2 text-base">
+                        <span>ຍອດຕ້ອງຊຳລະ / Grand Total:</span>
+                        <span id="admin-calc-total">0 LAK</span>
+                    </div>
+                </div>
+
+                <button type="button" onclick="generateCustomerLink()" class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3.5 px-6 rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg">
+                    <span>ສ້າງລິ້ງສົ່ງໃຫ້ລູກຄ້າ / Generate Link for Customer</span>
+                    <i class="fa-solid fa-link"></i>
+                </button>
+            </div>
+
+            <!-- Share Link Output Box -->
+            <div id="admin-link-output" class="hidden bg-emerald-50 border border-emerald-200 p-5 rounded-xl space-y-3">
+                <p class="text-emerald-900 font-bold text-sm"><i class="fa-solid fa-circle-check mr-1.5"></i> ສ້າງລິ້ງສຳເລັດແລ້ວ! Copy ລິ້ງນີ້ສົ່ງໃຫ້ລູກຄ້າ:</p>
+                <textarea id="generated-url-text" readonly class="w-full text-xs font-mono p-3 bg-white border border-emerald-300 rounded-lg text-emerald-900 focus:outline-none" rows="3"></textarea>
+                <button type="button" onclick="copyGeneratedLink()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-copy"></i> Copy Link
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- STEP 2: CUSTOMER ORDER CONFIRMATION PANEL     -->
+        <!-- ============================================== -->
+        <div id="form-container" class="bg-white rounded-2xl shadow-xl border border-stone-100 overflow-hidden transition-all duration-300">
+            
+            <!-- Bilingual Order Details Receipt Card -->
+            <div id="order-summary-box" class="bg-emerald-50/40 border-b border-emerald-100/50 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="p-3 bg-emerald-800 text-emerald-100 rounded-xl">
+                        <i class="fa-solid fa-receipt text-xl"></i>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-emerald-950 text-base">ລາຍລະອຽດການສັ່ງຊື້ຂອງທ່ານ / Your Order Details</h3>
+                            <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded" id="summary-order-id">-</span>
+                        </div>
+                        
+                        <!-- Dynamic list populated from URL parameters -->
+                        <div id="customer-product-list" class="mt-3 space-y-2 text-sm text-stone-700 border-t border-emerald-100/30 pt-3">
+                            <!-- Items added dynamically here -->
+                        </div>
+
+                        <!-- Financial breakdown for customer -->
+                        <div class="mt-4 pt-3 border-t border-stone-200/60 text-xs space-y-1.5 text-stone-600">
+                            <div class="flex justify-between">
+                                <span>ລາຄາລວມສິນຄ້າ / Subtotal:</span>
+                                <span id="summary-subtotal">-</span>
+                            </div>
+                            <div id="row-discount" class="flex justify-between text-rose-600 hidden">
+                                <span>ສ່ວນຫຼຸດ / Discount:</span>
+                                <span id="summary-discount">-</span>
+                            </div>
+                            <div id="row-deposit" class="flex justify-between text-blue-600 hidden">
+                                <span>ມັດຈຳແລ້ວ / Deposit Paid:</span>
+                                <span id="summary-deposit">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Summary Billing Total -->
+                        <div class="flex justify-between items-center mt-3 border-t border-dashed border-emerald-200 pt-3 text-stone-900">
+                            <span class="font-bold text-stone-600 text-xs uppercase tracking-wide">ຍອດລວມຕ້ອງຊຳລະ / Total Due</span>
+                            <span id="summary-amount" class="text-xl font-black text-emerald-900">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Starts -->
+            <form id="order-form" class="p-6 md:p-8 space-y-6">
+                <!-- Hidden inputs to hold auto-filled values -->
+                <input type="hidden" name="order_id" id="hidden-order-id">
+                <input type="hidden" name="subtotal" id="hidden-subtotal">
+                <input type="hidden" name="discount" id="hidden-discount">
+                <input type="hidden" name="deposit" id="hidden-deposit">
+                <input type="hidden" name="amount_due" id="hidden-amount-due">
+                <input type="hidden" name="products_list" id="hidden-products-list">
+                <input type="hidden" name="source" id="hidden-source">
+
+                <!-- Address Shipping Section -->
+                <div>
+                    <h2 class="text-lg font-bold border-b border-stone-100 pb-2 text-stone-900 flex items-center justify-between mb-4">
+                        <span><i class="fa-solid fa-truck-ramp-box text-emerald-700 mr-2"></i>1. ຂໍ້ມູນຜູ້ຮັບສິນຄ້າ / Shipping Address</span>
+                    </h2>
+
+                    <div class="space-y-4">
+                        <!-- Customer Name -->
+                        <div>
+                            <label for="customer_name" class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1">ຊື່ ແລະ ນາມສະກຸນ / Full Name *</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-stone-400">
+                                    <i class="fa-regular fa-user"></i>
+                                </span>
+                                <input type="text" id="customer_name" name="customer_name" required
+                                    class="pl-10 w-full rounded-lg border-stone-200 border p-3 focus:outline-none focus:ring-2 focus:ring-emerald-700 text-stone-900 text-sm"
+                                    placeholder="Jane Doe">
+                            </div>
+                        </div>
+
+                        <!-- Customer Phone -->
+                        <div>
+                            <label for="customer_phone" class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1">ເບີໂທລະສັບ / Phone Number *</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-stone-400">
+                                    <i class="fa-solid fa-phone"></i>
+                                </span>
+                                <input type="tel" id="customer_phone" name="customer_phone" required
+                                    class="pl-10 w-full rounded-lg border-stone-200 border p-3 focus:outline-none focus:ring-2 focus:ring-emerald-700 text-stone-900 text-sm"
+                                    placeholder="e.g. 020 9XXXXXXX">
+                            </div>
+                        </div>
+
+                        <!-- Customer Address -->
+                        <div>
+                            <label for="customer_address" class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1">ທີ່ຢູ່ຈັດສົ່ງສິນຄ້າຢ່າງລະອຽດ / Detailed Address *</label>
+                            <div class="relative">
+                                <span class="absolute top-3 left-3.5 text-stone-400">
+                                    <i class="fa-solid fa-house-chimney"></i>
+                                </span>
+                                <textarea id="customer_address" name="customer_address" required rows="3"
+                                    class="pl-10 w-full rounded-lg border-stone-200 border p-3 focus:outline-none focus:ring-2 focus:ring-emerald-700 text-stone-900 text-sm"
+                                    placeholder="House Number, Village, District, Province, Landmark..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Selection Block (Only Bank Transfer is supported) -->
+                <div class="pt-2 border-t border-stone-100">
+                    <h2 class="text-lg font-bold text-stone-900 flex items-center justify-between mb-4">
+                        <span><i class="fa-solid fa-credit-card text-emerald-700 mr-2"></i>2. ຊ່ອງທາງຊຳລະເງິນ / Payment Method</span>
+                    </h2>
+
+                    <div class="p-5 border-2 border-emerald-600 bg-emerald-50/20 rounded-2xl flex items-center select-none">
+                        <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa-solid fa-building-columns text-xl"></i>
+                        </div>
+                        <div class="flex-grow">
+                            <span class="font-bold text-stone-900 text-base">ໂອນຜ່ານທະນາຄານ / Bank Transfer</span>
+                            <span class="text-xs text-stone-500 block mt-0.5">ກະລຸນາໂອນເງິນ ແລະ ແນບຮູບໃບບິນເພື່ອຢືນຢັນການສັ່ງຊື້ / Please transfer and attach transaction slip</span>
+                        </div>
+                        <div class="text-emerald-700 text-2xl mr-1">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bank receipt slip area -->
+                <div id="bank-transfer-section" class="space-y-4 bg-stone-50 p-5 rounded-2xl border border-stone-200 transition-all duration-300">
+                    <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center">
+                        <div class="flex-shrink-0 w-28 h-28 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-center overflow-hidden">
+                            <!-- QR Payment mockup. Replace data string parameter with your own bank details -->
+                            <img id="bank-qr-code" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TheSale3-Camping" alt="Bank QR" class="w-full h-full object-contain p-1">
+                        </div>
+                        <div class="text-center sm:text-left text-xs space-y-1">
+                            <p class="font-bold text-stone-900 text-sm">ລາຍລະອຽດບັນຊີໂອນ / Account Details</p>
+                            <p class="text-stone-600"><span class="font-semibold text-stone-700">ທະນາຄານ / Bank:</span> BCEL Bank</p>
+                            <p class="text-stone-600"><span class="font-semibold text-stone-700">ເລກບັນຊີ / Acc No:</span> 160-12-00-1112223-001</p>
+                            <p class="text-stone-600"><span class="font-semibold text-stone-700">ຊື່ບັນຊີ / Name:</span> TheSale3 Camping</p>
+                            <p class="text-[10px] text-amber-800 font-medium bg-amber-50 px-2 py-0.5 rounded inline-block mt-1">ກະລຸນາໂອນເງິນ ແລະ ແນບຮູບໃບບິນຢູ່ລຸ່ມນີ້ / Transfer and attach slip below.</p>
+                        </div>
+                    </div>
+
+                    <!-- Slip Image Input -->
+                    <div>
+                        <label class="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1">ແນບຮູບໃບບິນໂອນເງິນ / Upload Payment Slip *</label>
+                        <div id="dropzone" class="border-2 border-dashed border-stone-300 rounded-xl p-6 text-center cursor-pointer hover:border-emerald-600 transition-all duration-200 bg-white">
+                            <input type="file" id="slip_file" accept="image/*" class="hidden">
+                            <div id="dropzone-prompt" class="space-y-2">
+                                <i class="fa-solid fa-images text-3xl text-stone-400"></i>
+                                <p class="text-xs font-bold text-stone-700">ກົດທີ່ນີ້ ເພື່ອເລືອກຮູບພາບ ຫຼື ວາງຮູບພາບໃບບິນ</p>
+                                <p class="text-[10px] text-stone-400">Click to upload or drag & drop transaction slip (JPG, PNG)</p>
+                            </div>
+                            
+                            <!-- Image Preview & Status -->
+                            <div id="preview-container" class="hidden relative inline-block mx-auto max-w-[180px] mt-2">
+                                <img id="slip-preview" src="#" alt="Receipt" class="rounded shadow-md max-h-48 object-contain">
+                                <button type="button" id="remove-image-btn" class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-rose-600">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submit-btn" class="w-full bg-emerald-900 hover:bg-emerald-950 text-white font-bold py-4 px-6 rounded-xl transition duration-200 flex flex-col items-center justify-center gap-0.5 shadow-lg">
+                    <span class="text-base font-extrabold">ຢືນຢັນການສັ່ງຊື້ / Confirm Order</span>
+                    <span class="text-[10px] text-emerald-200 font-medium uppercase tracking-wider">Submit shipping info & receipt</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Submission Loading Overlay -->
+        <div id="loading-container" class="hidden bg-white rounded-2xl shadow-xl border border-stone-100 p-8 text-center space-y-6 py-16">
+            <div class="inline-block relative">
+                <svg class="animate-spin h-16 w-16 text-emerald-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <i class="fa-solid fa-tents text-xl text-emerald-800 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-stone-900">ກຳລັງສົ່ງຂໍ້ມູນ... / Submitting...</h3>
+                <p class="text-stone-500 text-xs mt-2 max-w-xs mx-auto">ກະລຸນາລໍຖ້າຈັກໜ່ອຍ, ລະບົບກຳລັງບັນທຶກໃບບິນ ແລະ ທີ່ຢູ່ຂອງທ່ານ. Please wait while we register your address and payment logs.</p>
+            </div>
+        </div>
+
+        <!-- Success Result Card -->
+        <div id="success-container" class="hidden bg-white rounded-2xl shadow-xl border border-stone-100 p-8 text-center space-y-6 py-12">
+            <div class="w-20 h-20 bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-full flex items-center justify-center mx-auto text-4xl animate-bounce">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-xl font-bold text-stone-900">ຢືນຢັນການສັ່ງຊື້ສຳເລັດແລ້ວ!</h3>
+                <h4 class="text-sm font-semibold text-stone-500 uppercase tracking-widest mt-0.5">Order Confirmed Successfully!</h4>
+                <p class="text-xs text-stone-600 max-w-md mx-auto pt-2">ທາງຮ້ານໄດ້ຮັບຂໍ້ມູນ ແລະ ໃບບິນຊຳລະເງິນຂອງທ່ານຮຽບຮ້ອຍແລ້ວ. ພວກເຮົາຈະດຳເນີນການຈັດສົ່ງສິນຄ້າໃຫ້ໄວທີ່ສຸດ. We have successfully recorded your transaction and shipping info. Prepare for your adventure!</p>
+            </div>
+
+            <!-- Receipt Breakdown -->
+            <div class="bg-stone-50 p-5 rounded-xl border border-stone-200 text-left max-w-sm mx-auto text-xs space-y-2.5">
+                <p class="text-stone-500 font-extrabold uppercase tracking-wider text-[10px]">ບິນຢືນຢັນ / Confirmation Summary</p>
+                <div class="flex justify-between border-b border-stone-200 pb-2">
+                    <span class="text-stone-600">ຜູ້ຮັບ / Recipient:</span>
+                    <span id="receipt-name" class="font-bold text-stone-900">-</span>
+                </div>
+                <div class="flex justify-between border-b border-stone-200 pb-2">
+                    <span class="text-stone-600">\ບີໂທ / Phone:</span>
+                    <span id="receipt-phone" class="font-medium text-stone-900">-</span>
+                </div>
+                <div class="flex justify-between border-b border-stone-200 pb-2">
+                    <span class="text-stone-600">ຊ່ອງທາງ / Method:</span>
+                    <span id="receipt-method" class="font-bold text-emerald-800">-</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-stone-600">ສະຖານະ / Status:</span>
+                    <span class="font-semibold text-emerald-700 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-check animate-pulse"></i> ກຳລັງກະກຽມຈັດສົ່ງ / Ready to Ship
+                    </span>
+                </div>
+            </div>
+
+            <p class="text-[10px] text-stone-400">ທ່ານສາມາດປິດໜ້ານີ້ໄດ້ເລີຍ / You may now close this browser window.</p>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-950 text-stone-400 py-6 text-center text-xs border-t border-stone-900">
+        <div class="max-w-2xl mx-auto px-4 space-y-2">
+            <p>&copy; 2026 TheSale3 Camping Store. All rights reserved.</p>
+            <p class="text-stone-700 text-[10px]">ລະບົບບັນທຶກຄຳສັ່ງຊື້ & ຄັງຂໍ້ມູນຄວາມປອດໄພ BCEL Cloud Integrations.</p>
+        </div>
+    </footer>
+
+    <!-- Frontend Code Script -->
+    <script>
+        // CONFIGURATION: Replace this URL with your published Google Apps Script web app URL!
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_6D-PZ_gM4C66bUfM7i9X2K58vF_SAnSstX7bUExX_2K_O3Y_vE5qXG0/exec";
+
+        // REAL PRODUCTS CATALOG PRE-LOADED FROM INVENTORY SHEET (image_844fa3.jpg)
+        const INVENTORY_PRODUCTS = [
+            {"sku": "LIGHT HOLDER", "name": "ເກົ້າອີ້ພັບແບຣນ Light Holder", "price": 245000},
+            {"sku": "RAIN COVER GREEN", "name": "ຜ້າຄຸມກະເປົ໋າກັນຝົນ Rain Cover (Green 45L)", "price": 80000},
+            {"sku": "RAIN COVER BLACK", "name": "ຜ້າຄຸມກະເປົ໋າກັນຝົນ Rain Cover (Black 45L)", "price": 80000},
+            {"sku": "SLEEPING MAT NORMAL", "name": "ເບາະນອນພັບເລີ່ມ Sleeping mat Normal", "price": 330000},
+            {"sku": "CAMPING LAMP LED2 COB", "name": "ດອກໄຟ Camping LED2", "price": 160000},
+            {"sku": "FLYSHEET", "name": "ຜ້າກັນຝົນ ຟາຍຊີ Flysheet", "price": 340000},
+            {"sku": "RAIN COVER GREEN 60L", "name": "ຜ້າຄຸມກະເປົ໋າກັນຝົນ Rain Cover (Green 60L)", "price": 85000},
+            {"sku": "SMALL CAMPING LIGHT", "name": "ຕະກຽງນ້ອຍ Small Camping Light", "price": 200000},
+            {"sku": "LAMP LED", "name": "ຕະກຽງ LED", "price": 340000},
+            {"sku": "SMALL STOVE", "name": "ເຕົາແກ໊ສນ້ອຍ Small Stove", "price": 165000},
+            {"sku": "BINCOO ELECTRIC CERAMIC STOVE", "name": "ເຕົາໄຟຟ້າ Bincoo Electric Ceramic Stove", "price": 330000},
+            {"sku": "CANVAS FLOOR COVERING", "name": "canvas floor covering", "price": 155000},
+            {"sku": "GLASS-SCVCN-X62", "name": "ແວ່ນກັນແດດ SCVCN SC-X62", "price": 145000},
+            {"sku": "BACKPACK ROLL TOP DRY WATERPROOF", "name": "ກະເປົ໋າກັນນໍ້າ Roll Top Dry Waterproof", "price": 590000},
+            {"sku": "MOUNTAIN ROCK ALUMINUM ALLOY POLE", "name": "ໄມ້ເທົ້າເສົາຄໍ້າ (Foldable Aluminum Pole)", "price": 210000},
+            {"sku": "NATUREHIKE SLEEPING BAG PORTABLE", "name": "ຖົງນອນ Naturehike Sleeping Bag Portable", "price": 590000},
+            {"sku": "HIKING-POLE-NATUREHIKE-ST01.PNG", "name": "ໄມ້ເທົ້າ Naturehike ST01 (Aluminum)", "price": 350000}
+        ];
+
+        // DOM elements
+        const adminContainer = document.getElementById('admin-container');
+        const formContainer = document.getElementById('form-container');
+        const orderForm = document.getElementById('order-form');
+        const loadingContainer = document.getElementById('loading-container');
+        const successContainer = document.getElementById('success-container');
+        const errorContainer = document.getElementById('error-container');
+        const errorMessageText = document.getElementById('error-message-text');
+
+        // Form fields references
+        const orderSummaryBox = document.getElementById('order-summary-box');
+        const summaryOrderId = document.getElementById('summary-order-id');
+        const summaryAmount = document.getElementById('summary-amount');
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryDiscount = document.getElementById('summary-discount');
+        const summaryDeposit = document.getElementById('summary-deposit');
+        const customerProductList = document.getElementById('customer-product-list');
+
+        // Payments DOM
+        const bankTransferSection = document.getElementById('bank-transfer-section');
+
+        // File Slips DOM
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('slip_file');
+        const previewContainer = document.getElementById('preview-container');
+        const slipPreview = document.getElementById('slip-preview');
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const dropzonePrompt = document.getElementById('dropzone-prompt');
+
+        let compressedImageBase64 = "";
+        let originalFileName = "";
+
+        // On Page Load: Handle Routing (Admin Panel vs Customer Checkout)
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isAdmin = urlParams.get('admin');
+
+            if (isAdmin === 'true') {
+                // If the user appended ?admin=true, show the product-adding form!
+                adminContainer.classList.remove('hidden');
+                formContainer.classList.add('hidden');
+                
+                // Initialize first row dropdown options
+                populateProductDropdown(document.querySelector('.prod-sku-selector'));
+                setupAdminFormCalculations();
+            } else {
+                // Otherwise, parse invoice data dynamically sent to the customer
+                parseCustomerInvoice(urlParams);
+            }
+        });
+
+        // Populate a product selector with catalog choices + "Custom"
+        function populateProductDropdown(selectEl) {
+            if (!selectEl) return;
+            selectEl.innerHTML = '<option value="">-- ເລືອກສິນຄ້າ (Select Product) --</option>';
+            INVENTORY_PRODUCTS.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.sku;
+                opt.dataset.name = p.name;
+                opt.dataset.price = p.price;
+                opt.innerText = `${p.sku} | ${p.name} (${p.price.toLocaleString()} LAK)`;
+                selectEl.appendChild(opt);
+            });
+            const customOpt = document.createElement('option');
+            customOpt.value = "CUSTOM";
+            customOpt.innerText = "➕ ສິນຄ້າອື່ນໆ... (Custom Product...)";
+            selectEl.appendChild(customOpt);
+        }
+
+        // When admin selects a product, auto-fill price or show custom input
+        function onProductSelect(selectEl) {
+            const row = selectEl.closest('.product-row');
+            const customInput = row.querySelector('.prod-name-custom');
+            const priceInput = row.querySelector('.prod-price');
+            
+            if (selectEl.value === "CUSTOM") {
+                customInput.classList.remove('hidden');
+                customInput.setAttribute('required', 'required');
+                priceInput.value = "";
+            } else {
+                customInput.classList.add('hidden');
+                customInput.removeAttribute('required');
+                const selectedOpt = selectEl.options[selectEl.selectedIndex];
+                if (selectedOpt && selectedOpt.value) {
+                    priceInput.value = selectedOpt.dataset.price;
+                } else {
+                    priceInput.value = "";
+                }
+            }
+            calculateAdminTotal();
+        }
+
+        // ============================================== 
+        // 1. ADMIN MODE ACTIONS (Link Generator)
+        // ============================================== 
+        function addProductRow() {
+            const container = document.getElementById('admin-product-rows');
+            const newRow = document.createElement('div');
+            newRow.className = "flex flex-col sm:flex-row gap-2 items-start sm:items-center product-row bg-stone-50 p-3 rounded-xl border border-stone-200 relative";
+            newRow.innerHTML = `
+                <div class="w-full sm:w-1/2">
+                    <select onchange="onProductSelect(this)" class="prod-sku-selector w-full rounded-lg border-stone-200 border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700">
+                        <!-- Options filled via populator -->
+                    </select>
+                    <input type="text" placeholder="Custom Product Name" class="prod-name-custom w-full mt-2 rounded-lg border-stone-200 border p-2 text-sm hidden">
+                </div>
+                <div class="flex gap-2 w-full sm:w-1/2 items-center">
+                    <div class="w-1/3">
+                        <input type="number" placeholder="Qty" class="prod-qty w-full rounded-lg border-stone-200 border p-2 text-sm text-center focus:outline-none" min="1" value="1">
+                    </div>
+                    <div class="w-2/3 relative">
+                        <input type="number" placeholder="Price (LAK)" class="prod-price w-full rounded-lg border-stone-200 border p-2 pr-8 text-sm text-right focus:outline-none">
+                        <span class="absolute right-2.5 top-2.5 text-[10px] font-bold text-stone-400">LAK</span>
+                    </div>
+                    <button type="button" onclick="removeProductRow(this)" class="text-rose-500 hover:text-rose-700 p-2"><i class="fa-regular fa-trash-can"></i></button>
+                </div>
+            `;
+            container.appendChild(newRow);
+            populateProductDropdown(newRow.querySelector('.prod-sku-selector'));
+            setupAdminFormCalculations();
+        }
+
+        function removeProductRow(button) {
+            const row = button.closest('.product-row');
+            row.remove();
+            calculateAdminTotal();
+        }
+
+        function setupAdminFormCalculations() {
+            const inputs = document.querySelectorAll('.prod-qty, .prod-price, #admin-discount, #admin-deposit');
+            inputs.forEach(input => {
+                input.removeEventListener('input', calculateAdminTotal);
+                input.addEventListener('input', calculateAdminTotal);
+            });
+        }
+
+        function calculateAdminTotal() {
+            let subtotal = 0;
+            const rows = document.querySelectorAll('.product-row');
+            rows.forEach(row => {
+                const qty = parseFloat(row.querySelector('.prod-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.prod-price').value) || 0;
+                subtotal += (qty * price);
+            });
+
+            const discount = parseFloat(document.getElementById('admin-discount').value) || 0;
+            const deposit = parseFloat(document.getElementById('admin-deposit').value) || 0;
+            const grandTotal = Math.max(0, subtotal - discount - deposit);
+
+            document.getElementById('admin-calc-subtotal').innerText = subtotal.toLocaleString() + " LAK";
+            document.getElementById('admin-calc-discount').innerText = "-" + discount.toLocaleString() + " LAK";
+            document.getElementById('admin-calc-deposit').innerText = "-" + deposit.toLocaleString() + " LAK";
+            document.getElementById('admin-calc-total').innerText = grandTotal.toLocaleString() + " LAK";
+            return { subtotal, discount, deposit, grandTotal };
+        }
+
+        // Generate customized prefilled Link with complete JSON structure
+        function generateCustomerLink() {
+            const orderId = document.getElementById('admin-order-id').value || 'INV-' + Math.floor(Math.random() * 9000 + 1000);
+            const source = document.getElementById('admin-source').value || 'TikTok';
+            const calcs = calculateAdminTotal();
+            
+            // Gather product details array
+            const products = [];
+            const rows = document.querySelectorAll('.product-row');
+            rows.forEach(row => {
+                const selectEl = row.querySelector('.prod-sku-selector');
+                let name = "";
+                let sku = selectEl.value;
+
+                if (sku === "CUSTOM") {
+                    name = row.querySelector('.prod-name-custom').value;
+                    sku = "CUSTOM_PRODUCT";
+                } else if (sku) {
+                    const selectedOpt = selectEl.options[selectEl.selectedIndex];
+                    name = selectedOpt.dataset.name;
+                }
+
+                const qty = parseInt(row.querySelector('.prod-qty').value) || 1;
+                const price = parseFloat(row.querySelector('.prod-price').value) || 0;
+                
+                if (name.trim()) {
+                    products.push({ sku, name, qty, price });
+                }
+            });
+
+            if (products.length === 0) {
+                alert("Please select or add at least one product description first!");
+                return;
+            }
+
+            // Create shareable secure base64 payload of items
+            const payload = {
+                orderId: orderId,
+                source: source,
+                subtotal: calcs.subtotal,
+                discount: calcs.discount,
+                deposit: calcs.deposit,
+                grandTotal: calcs.grandTotal,
+                items: products
+            };
+
+            const encodedPayload = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+            
+            // Build absolute path to current web app
+            const currentUrl = window.location.origin + window.location.pathname;
+            const finalCustomerLink = `${currentUrl}?order=${encodedPayload}`;
+
+            // Reveal generated box info
+            document.getElementById('generated-url-text').value = finalCustomerLink;
+            document.getElementById('admin-link-output').classList.remove('hidden');
+            document.getElementById('admin-link-output').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyGeneratedLink() {
+            const textarea = document.getElementById('generated-url-text');
+            textarea.select();
+            document.execCommand('copy');
+            alert("Copied to clipboard! Send this link to your customer.");
+        }
+
+        // ============================================== 
+        // 2. CUSTOMER PROCESSOR LOGIC
+        // ============================================== 
+        function parseCustomerInvoice(urlParams) {
+            const orderHash = urlParams.get('order');
+            if (!orderHash) {
+                // If standard page opened without params, show simple generic template
+                summaryOrderId.innerText = "N/A";
+                summaryAmount.innerText = "Contact Store";
+                return;
+            }
+
+            try {
+                // Decode base64 payload configuration
+                const decodedJson = JSON.parse(decodeURIComponent(escape(atob(orderHash))));
+                
+                // Set hidden input values for Form dispatch to Sheets
+                document.getElementById('hidden-order-id').value = decodedJson.orderId;
+                document.getElementById('hidden-source').value = decodedJson.source || "Web Form";
+                document.getElementById('hidden-subtotal').value = decodedJson.subtotal;
+                document.getElementById('hidden-discount').value = decodedJson.discount || 0;
+                document.getElementById('hidden-deposit').value = decodedJson.deposit || 0;
+                document.getElementById('hidden-amount-due').value = decodedJson.grandTotal;
+                
+                summaryOrderId.innerText = "#" + decodedJson.orderId;
+                summarySubtotal.innerText = decodedJson.subtotal.toLocaleString() + " LAK";
+
+                // Handle discount conditional visibility
+                if (decodedJson.discount > 0) {
+                    document.getElementById('row-discount').classList.remove('hidden');
+                    summaryDiscount.innerText = "-" + decodedJson.discount.toLocaleString() + " LAK";
+                }
+                // Handle deposit conditional visibility
+                if (decodedJson.deposit > 0) {
+                    document.getElementById('row-deposit').classList.remove('hidden');
+                    summaryDeposit.innerText = "-" + decodedJson.deposit.toLocaleString() + " LAK";
+                }
+
+                summaryAmount.innerText = decodedJson.grandTotal.toLocaleString() + " LAK";
+
+                // Format products list layout beautifully
+                customerProductList.innerHTML = "";
+                let itemSummaryTextList = [];
+
+                decodedJson.items.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = "flex justify-between items-center text-xs py-1 border-b border-stone-100/50";
+                    row.innerHTML = `
+                        <span class="font-medium text-stone-900"><i class="fa-solid fa-caret-right text-emerald-800 mr-1.5"></i>${item.name} <span class="text-stone-400">x${item.qty}</span></span>
+                        <span class="text-stone-500 font-semibold">${(item.qty * item.price).toLocaleString()} LAK</span>
+                    `;
+                    customerProductList.appendChild(row);
+
+                    itemSummaryTextList.push(`${item.name} (${item.qty}x)`);
+                });
+
+                // Write plain text array description to Google sheets hidden field input
+                document.getElementById('hidden-products-list').value = itemSummaryTextList.join(", ");
+
+                // Set dynamic QR code generation containing total amount due
+                document.getElementById('bank-qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TheSale3-ORDER-${decodedJson.orderId}-AMOUNT-${decodedJson.grandTotal}`;
+
+            } catch (err) {
+                console.error("Failed parsing order link", err);
+                showError("Invalid Order link. Please request a new verification link from your seller.");
+            }
+        }
+
+        // File Uploader, Drag & Drop Logic with inline Compressor
+        dropzone.addEventListener('click', (e) => {
+            if (e.target !== removeImageBtn && !removeImageBtn.contains(e.target)) {
+                fileInput.click();
+            }
+        });
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-emerald-600', 'bg-emerald-50/10');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('border-emerald-600', 'bg-emerald-50/10');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-emerald-600', 'bg-emerald-50/10');
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        removeImageBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            resetFileInput();
+        });
+
+        function resetFileInput() {
+            fileInput.value = "";
+            compressedImageBase64 = "";
+            originalFileName = "";
+            previewContainer.classList.add('hidden');
+            dropzonePrompt.classList.remove('hidden');
+            slipPreview.src = "#";
+        }
+
+        function handleFileSelect(file) {
+            if (!file.type.match('image.*')) {
+                showError("ກະລຸນາແນບຮູບພາບໃບບິນເທົ່ານັ້ນ! Please upload an image file (PNG/JPG).");
+                resetFileInput();
+                return;
+            }
+
+            originalFileName = file.name;
+            dropzonePrompt.classList.add('hidden');
+            previewContainer.classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const MAX_WIDTH = 800;
+                    const MAX_HEIGHT = 800;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Highly compressed image for fast Google Sheets/Drive uploads
+                    compressedImageBase64 = canvas.toDataURL('image/jpeg', 0.75);
+                    slipPreview.src = compressedImageBase64;
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ============================================== 
+        // 4. API DISPATCH SUBMIT FORM
+        // ============================================== 
+        orderForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorContainer.classList.add('hidden');
+
+            if (GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
+                showError("Frontend Config Error: Define GOOGLE_SCRIPT_URL inside your HTML script code.");
+                return;
+            }
+
+            if (!compressedImageBase64) {
+                showError("ກະລຸນາແນບຮູບໃບບິນໂອນເງິນຂອງທ່ານກ່ອນ! Please upload transfer slip.");
+                return;
+            }
+
+            formContainer.classList.add('hidden');
+            loadingContainer.classList.remove('hidden');
+
+            const formData = {
+                order_id: document.getElementById('hidden-order-id').value || "N/A",
+                source: document.getElementById('hidden-source').value || "Web Form",
+                subtotal: parseFloat(document.getElementById('hidden-subtotal').value) || 0,
+                discount: parseFloat(document.getElementById('hidden-discount').value) || 0,
+                deposit: parseFloat(document.getElementById('hidden-deposit').value) || 0,
+                amount_due: parseFloat(document.getElementById('hidden-amount-due').value) || 0,
+                products_list: document.getElementById('hidden-products-list').value || "N/A",
+                customer_name: document.getElementById('customer_name').value,
+                customer_phone: document.getElementById('customer_phone').value,
+                customer_address: document.getElementById('customer_address').value,
+                payment_method: "Bank Transfer",
+                fileData: compressedImageBase64 ? compressedImageBase64.split(',')[1] : "",
+                fileName: originalFileName || ""
+            };
+
+            let success = false;
+            let attempts = 3;
+
+            for (let i = 0; i < attempts; i++) {
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        // Note: Using no-cors prevents reading response body in some configurations,
+                        // but guarantees the payload payload arrives successfully to AppScript!
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    success = true;
+                    break;
+                } catch (err) {
+                    console.error("Network issue. Retrying...", err);
+                    await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+                }
+            }
+
+            if (success) {
+                document.getElementById('receipt-name').innerText = formData.customer_name;
+                document.getElementById('receipt-phone').innerText = formData.customer_phone;
+                document.getElementById('receipt-method').innerText = "ໂອນຜ່ານທະນາຄານ (Transfer)";
+
+                loadingContainer.classList.add('hidden');
+                successContainer.classList.remove('hidden');
+                successContainer.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                loadingContainer.classList.add('hidden');
+                formContainer.classList.remove('hidden');
+                showError("ເກີດຂໍ້ຜິດພາດໃນການສົ່ງຂໍ້ມູນ. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ. Network timeout: Could not connect to database.");
+            }
+        });
+    </script>
+</body>
+</html>
