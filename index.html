@@ -17,6 +17,9 @@
 </head>
 <body class="bg-stone-50 text-stone-800 min-h-screen flex flex-col justify-between">
 
+    <!-- Floating Toast Notification System (Replaces primitive browser alerts) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4"></div>
+
     <!-- Header / Brand Banner -->
     <header class="bg-emerald-950 text-stone-100 py-6 px-4 shadow-md text-center relative overflow-hidden">
         <div class="absolute inset-0 opacity-10 pointer-events-none bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1200&q=80');"></div>
@@ -138,7 +141,7 @@
                     </div>
                 </div>
 
-                <button type="button" onclick="generateCustomerLink()" class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3.5 px-6 rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg">
+                <button type="button" onclick="generateCustomerLink()" class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3.5 px-6 rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
                     <span>ສ້າງລິ້ງສົ່ງໃຫ້ລູກຄ້າ / Generate Link for Customer</span>
                     <i class="fa-solid fa-link"></i>
                 </button>
@@ -147,8 +150,8 @@
             <!-- Share Link Output Box -->
             <div id="admin-link-output" class="hidden bg-emerald-50 border border-emerald-200 p-5 rounded-xl space-y-3">
                 <p class="text-emerald-900 font-bold text-sm"><i class="fa-solid fa-circle-check mr-1.5"></i> ສ້າງລິ້ງສຳເລັດແລ້ວ! Copy ລິ້ງນີ້ສົ່ງໃຫ້ລູກຄ້າ:</p>
-                <textarea id="generated-url-text" readonly class="w-full text-xs font-mono p-3 bg-white border border-emerald-300 rounded-lg text-emerald-900 focus:outline-none" rows="3"></textarea>
-                <button type="button" onclick="copyGeneratedLink()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2">
+                <textarea id="generated-url-text" readonly class="w-full text-xs font-mono p-3 bg-white border border-emerald-300 rounded-lg text-emerald-900 focus:outline-none animate-pulse" rows="3"></textarea>
+                <button type="button" onclick="copyGeneratedLink()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 active:scale-95 transition">
                     <i class="fa-solid fa-copy"></i> Copy Link
                 </button>
             </div>
@@ -162,13 +165,13 @@
             <!-- Bilingual Order Details Receipt Card -->
             <div id="order-summary-box" class="bg-emerald-50/40 border-b border-emerald-100/50 p-6">
                 <div class="flex items-start gap-4">
-                    <div class="p-3 bg-emerald-800 text-emerald-100 rounded-xl">
+                    <div class="p-3 bg-emerald-800 text-emerald-100 rounded-xl shadow-inner">
                         <i class="fa-solid fa-receipt text-xl"></i>
                     </div>
                     <div class="flex-grow">
                         <div class="flex items-center justify-between">
                             <h3 class="font-bold text-emerald-950 text-base">ລາຍລະອຽດການສັ່ງຊື້ຂອງທ່ານ / Your Order Details</h3>
-                            <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded" id="summary-order-id">-</span>
+                            <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded shadow-sm" id="summary-order-id">-</span>
                         </div>
                         
                         <!-- Dynamic list populated from URL parameters -->
@@ -298,7 +301,7 @@
                             <p class="font-bold text-stone-900 text-sm">ລາຍລະອຽດບັນຊີໂອນ / Account Details</p>
                             <p class="text-stone-600"><span class="font-semibold text-stone-700">ທະນາຄານ / Bank:</span> BCEL Bank</p>
                             <p class="text-stone-600"><span class="font-semibold text-stone-700">ເລກບັນຊີ / Acc No:</span> 160-12-00-1112223-001</p>
-                            <p class="text-stone-600"><span class="font-semibold text-stone-700">ชື່ບັນຊີ / Name:</span> TheSale3 Camping</p>
+                            <p class="text-stone-600"><span class="font-semibold text-stone-700">ຊື່ບັນຊີ / Name:</span> TheSale3 Camping</p>
                             <button type="button" onclick="openQrModal()" class="text-[10px] text-emerald-800 font-bold bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded inline-block mt-1 transition border border-emerald-200">
                                 <i class="fa-solid fa-expand mr-1"></i> ເບິ່ງຮູບ QR ໃຫຍ່ / View Large QR
                             </button>
@@ -319,7 +322,7 @@
                             <!-- Image Preview & Status -->
                             <div id="preview-container" class="hidden relative inline-block mx-auto max-w-[180px] mt-2">
                                 <img id="slip-preview" src="#" alt="Receipt" class="rounded shadow-md max-h-48 object-contain">
-                                <button type="button" id="remove-image-btn" class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-rose-600">
+                                <button type="button" id="remove-image-btn" class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-rose-600 transition-colors">
                                     <i class="fa-solid fa-xmark"></i>
                                 </button>
                             </div>
@@ -328,7 +331,7 @@
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" id="submit-btn" class="w-full bg-emerald-900 hover:bg-emerald-950 text-white font-bold py-4 px-6 rounded-xl transition duration-200 flex flex-col items-center justify-center gap-0.5 shadow-lg">
+                <button type="submit" id="submit-btn" class="w-full bg-emerald-900 hover:bg-emerald-950 text-white font-bold py-4 px-6 rounded-xl transition duration-200 flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-[0.99]">
                     <span class="text-base font-extrabold">ຢືນຢັນການສັ່ງຊື້ / Confirm Order</span>
                     <span class="text-[10px] text-emerald-200 font-medium uppercase tracking-wider">Submit shipping info & receipt</span>
                 </button>
@@ -436,8 +439,7 @@
     <!-- Frontend Code Script -->
     <script>
         // =========================================================================
-        // ⚠️ CRUCIAL: Replace this URL with your newly deployed Google Apps Script Web App URL!
-        // It must look like: https://script.google.com/macros/s/XXXXXXXXX/exec
+        // ⚠️ CRUCIAL: Synced Google Apps Script Web App Deployment URL
         // =========================================================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjidL81Hj2XYYKouAmq_8nm5MQB4Leqmz9SOIuPEGvriP9O5oVCEZm4NLoDG6wneC4/exec";
 
@@ -493,6 +495,40 @@
 
         let compressedImageBase64 = "";
         let originalFileName = "";
+
+        // Premium Floating Toast Notification Engine
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `p-4 rounded-xl shadow-xl border text-xs md:text-sm font-semibold flex items-center gap-3 transform translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto max-w-sm w-full ${
+                type === 'success' 
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
+                : 'bg-rose-50 border-rose-200 text-rose-900'
+            }`;
+            
+            const icon = type === 'success' 
+                ? '<i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>' 
+                : '<i class="fa-solid fa-triangle-exclamation text-rose-600 text-lg"></i>';
+                
+            toast.innerHTML = `
+                ${icon}
+                <div class="flex-grow">${message}</div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-stone-400 hover:text-stone-600 font-bold text-lg leading-none">&times;</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+            
+            // Auto remove
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
 
         // Modal triggers
         function openQrModal() {
@@ -659,7 +695,7 @@
             });
 
             if (products.length === 0) {
-                alert("Please select or add at least one product description first!");
+                showToast("ກະລຸນາເລືອກສິນຄ້າຢ່າງໜ້ອຍ 1 ລາຍການກ່ອນ! (Please select at least one product!)", "error");
                 return;
             }
 
@@ -690,7 +726,7 @@
             const textarea = document.getElementById('generated-url-text');
             textarea.select();
             document.execCommand('copy');
-            alert("Copied to clipboard! Send this link to your customer.");
+            showToast("ຄັດລອກລິ້ງສຳເລັດແລ້ວ! (Link copied to clipboard!)", "success");
         }
 
         // ============================================== 
@@ -804,7 +840,7 @@
 
         function handleFileSelect(file) {
             if (!file.type.match('image.*')) {
-                showError("ກະລຸນາແນບຮູບພາບໃບບິນເທົ່ານັ້ນ! Please upload an image file (PNG/JPG).");
+                showToast("ກະລຸນາແນບຮູບພາບໃບບິນເທົ່ານັ້ນ! (Please upload an image file PNG/JPG)", "error");
                 resetFileInput();
                 return;
             }
@@ -868,7 +904,7 @@
             }
 
             if (!compressedImageBase64) {
-                showError("ກະລຸນາແນບຮູບໃບບິນໂອນເງິນຂອງທ່ານກ່ອນ! Please upload transfer slip.");
+                showToast("ກະລຸນາແນບຮູບໃບບິນໂອນເງິນຂອງທ່ານກ່ອນ! (Please upload transfer slip first!)", "error");
                 return;
             }
 
@@ -900,7 +936,7 @@
                         method: 'POST',
                         mode: 'no-cors',
                         // Note: Using no-cors prevents reading response body in some configurations,
-                        // but guarantees the payload payload arrives successfully to AppScript!
+                        // but guarantees the payload arrives successfully to Apps Script!
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(formData)
                     });
@@ -920,6 +956,7 @@
                 loadingContainer.classList.add('hidden');
                 successContainer.classList.remove('hidden');
                 successContainer.scrollIntoView({ behavior: 'smooth' });
+                showToast("ຢືນຢັນການສັ່ງຊື້ສຳເລັດແລ້ວ! (Order confirmed!)", "success");
             } else {
                 loadingContainer.classList.add('hidden');
                 formContainer.classList.remove('hidden');
